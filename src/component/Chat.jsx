@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router";
 import createSocketConnection from "../utils/socket";
 import { useSelector } from "react-redux";
+import axios from "axios";
+import BASE_URL from "../utils/constant";
 
 const Chat = () => {
   const { toUserId } = useParams();
@@ -24,6 +26,20 @@ const Chat = () => {
       socket.disconnect(); // when component unmount
     };
   }, [userId, toUserId]);
+
+  const fetchChatmessages = async () =>{
+     const chat = await axios.get(BASE_URL + "/chat/" + toUserId , {withCredentials: true})
+     
+     const chatMessages = chat?.data?.messages.map((msg)=>{
+            const { senderId , text} = msg;
+            return {name : senderId.firstName , text} 
+     })
+     setMessage(chatMessages)
+  }
+
+  useEffect(()=>{
+    fetchChatmessages();
+  } , [])
 
   const sendMessage = () => {
     const socket = createSocketConnection();
